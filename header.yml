@@ -1,0 +1,15 @@
+--
+noteType: pf2eMonster
+aliases: "autpNPC"
+#tags: 
+#  - pf2e/creature/level/1
+statblock: inline
+name: "auto NPC"
+level: 1
+challenge_level: "low"
+#perception: 5
+size: "Medium"
+alignment: "CN"
+traits:
+  - "[[humanoid|Humanoid]]"
+---
