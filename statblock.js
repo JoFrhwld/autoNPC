@@ -1,6 +1,9 @@
 // To be included in a dataviewjs block
-
 const this_front = dv.current().file.frontmatter
+
+if (!("level" in this_front)){
+  this_front["level"] = 0;
+}
 
 // based on Table 2-2
 // Pathfinder 2e Game Mastery Guide
@@ -66,6 +69,47 @@ const ac_dict = {
   "24": 50 
 };
 
+// based on Table 2-6
+// Pathfinder 2e Game Mastery Guide
+// Release Date 2/26/2020
+const saves_dict = {
+  "-1": 5,
+  "0": 6,
+  "1": 7,
+  "2": 8,
+  "3": 9,
+  "4": 11,
+  "5": 12,
+  "6": 14,
+  "7": 15,
+  "8": 16,
+  "9": 18,
+  "10": 19,
+  "11": 21,
+  "12": 22,
+  "13": 23,
+  "14": 25,
+  "15": 26,
+  "16": 28,
+  "17": 28,
+  "18": 30,
+  "19": 32,
+  "20": 33,
+  "21": 35,
+  "22": 36,
+  "23": 27,
+  "24": 38 
+}
+
+// adjust default values given the challenge level
+function adjust_for_challenge(value, challenge_dict){
+  let new_value = value
+  if (this_front.challenge_level in challenge_dict){
+    new_value = value + challenge_dict[this_front.challenge_level];
+  }
+  return new_value;
+}
+
 // Returns the final statblock
 function wholestat(){
   return [
@@ -74,7 +118,6 @@ function wholestat(){
     "```"
   ].join("\n")
 }
-
 
 // Builds the top info block
 function makeinfoblock(){
@@ -139,7 +182,7 @@ function buildTraits(){
 
 // Builds perception
 function buildPercep(){
-  let percep_value = 6;
+  let percep_value = percep_dict[this_front.level.toString()];
   let percep_list = [];
   
   const percep_level_mod = {
@@ -147,18 +190,14 @@ function buildPercep(){
     "high": 3
   };
   
-  if ("perception" in  this_front){
-    percep_value = this_front.perception;
-  } else if("level" in this_front){
-    percep_value = percep_dict[this_front.level.toString()];
-  }
-  
   if (this_front.challenge_level){
-    if (this_front.challenge_level in percep_level_mod){
-      percep_value = percep_value + percep_level_mod[this_front.challenge_level];
-    }
+    percep_value = adjust_for_challenge(percep_value, percep_level_mod);
   }
 
+  if ("perception" in  this_front){
+    percep_value = this_front.perception;
+  }
+  
   percep_list.push(
     `modifier: "${percep_value}"`
   );
@@ -180,29 +219,54 @@ function buildPercep(){
 }
 
 function buildAC(){
-  let ac_value = 15;
+  let ac_value = ac_dict[this_front.level.toString()];
+  let fortitude_value = saves_dict[this_front.level.toString()];
+  let reflex_value = saves_dict[this_front.level.toString()];
+  let will_value = saves_dict[this_front.level.toString()];
   let ac_list = [];
   
   const ac_level_mod = {
     "low": -2,
     "high": 1
   };
-  
+
+  const save_level_mod = {
+    "low": -3,
+    "high": 3
+  }
+
+  /// AC setting
+  if (this_front.challenge_level){
+    ac_value = adjust_for_challenge(ac_value, ac_level_mod);
+  }
+  // Override ac if in header
   if ("ac" in  this_front){
     ac_value = this_front.ac;
-  } else if("level" in this_front){
-    ac_value = ac_dict[this_front.level.toString()];
   }
-  
+
+  // saves setting 
   if (this_front.challenge_level){
-    if (this_front.challenge_level in ac_level_mod){
-      ac_value = ac_value + ac_level_mod[this_front.challenge_level];
-    }
+    fortitude_value = adjust_for_challenge(fortitude_value, save_level_mod);
+    will_value = adjust_for_challenge(will_value, save_level_mod);
+    reflex_value = adjust_for_challenge(reflex_value, save_level_mod);
   }
+  // saves overides
+  if ("saves" in this_front){
+    if ("fortitude" in this_front.saves){
+      fortitude_value = this_front.saves.fortitude;
+    }
+    if("reflex" in this_front.saves){
+      reflex_value = this_front.saves.reflex;
+    }
+    if("will" in this_front.saves){
+      will_value = this_front.saves.will; 
+    }
+  } 
+
   ac_list.push(`ac: ${ac_value}`);
   ac_list.push("armorclass:");
   ac_list.push("  - name: AC")
-  ac_list.push(`    desc: ${ac_value}`)
+  ac_list.push(`    desc: "${ac_value}; __Fort__: +${fortitude_value} (1d20+${fortitude_value}); __Ref__: +${reflex_value} (1d20+${reflex_value}); __Will__: +${will_value} (1d20+${will_value});"`)
   return ac_list.join("\n")
 }
 
