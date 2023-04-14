@@ -1,9 +1,43 @@
 // To be included in a dataviewjs block
-const this_front = dv.current().file.frontmatter
 
+const this_front = dv.current().file.frontmatter
 if (!("level" in this_front)){
   this_front["level"] = 0;
 }
+
+const ability_order = ["str", "dex", "con", "int", "wis", "cha"];
+
+// based on Table 2-1
+// Pathfinder 2e Game Mastery Guide
+// Release Date 2/26/2020
+const ability_dict = {
+  "-1": 2,
+  "0": 2,
+  "1": 3,
+  "2": 3,
+  "3": 3,
+  "4": 3,
+  "5": 4,
+  "6": 4,
+  "7": 4,
+  "8": 4,
+  "9": 4,
+  "10": 4,
+  "11": 5,
+  "12": 5,
+  "13": 5,
+  "14": 5,
+  "15": 6,
+  "16": 6,
+  "17": 6,
+  "18": 6,
+  "19": 6,
+  "20": 7,
+  "21": 7,
+  "22": 8,
+  "23": 8,
+  "24": 9
+};
 
 // based on Table 2-2
 // Pathfinder 2e Game Mastery Guide
@@ -118,6 +152,7 @@ function wholestat(){
     "```"
   ].join("\n")
 }
+
 
 // Builds the top info block
 function makeinfoblock(){
@@ -274,14 +309,43 @@ function buildAC(){
   ac_list.push(`ac: ${ac_value}`);
   ac_list.push("armorclass:");
   ac_list.push("  - name: AC")
-  ac_list.push(`    desc: "${ac_value}; __Fort__: +${fortitude_value} (1d20+${fortitude_value}); __Ref__: +${reflex_value} (1d20+${reflex_value}); __Will__: +${will_value} (1d20+${will_value});"`)
+  ac_list.push(`    desc: "${ac_value}; ` + 
+               `__Fort__: +${fortitude_value} (1d20+${fortitude_value}); `+
+               `__Ref__: +${reflex_value} (1d20+${reflex_value}); `+
+               `__Will__: +${will_value} (1d20+${will_value});"`)
   return ac_list.join("\n")
+}
+
+function build_ability(){
+  let this_ability_dict = {
+    "str": ability_dict[this_front.level.toString()],
+    "dex": ability_dict[this_front.level.toString()],
+    "con": ability_dict[this_front.level.toString()],
+    "int": ability_dict[this_front.level.toString()],
+    "wis": ability_dict[this_front.level.toString()],
+    "cha": ability_dict[this_front.level.toString()]
+  }
+
+  if ("ability" in this_front){
+    for (let i = 0; i < ability_order.length; i++){
+      if (ability_order[i] in this_front.ability){
+        this_ability_dict[ability_order[i]] = this_front.ability[ability_order [i]];
+      }
+    }
+  }
+  let ability_string = "abilityMods: ["
+  for (let i = 0; i < ability_order.length; i++){
+    ability_string += `${this_ability_dict[ability_order[i]]},`;
+  }
+  ability_string += "]"
+  return ability_string;
 }
 
 // Builds components of a stat block
 function statcontents(){
   return [
    makeinfoblock(),
+   build_ability(),
    buildTraits(),
    buildPercep(),
    buildAC()

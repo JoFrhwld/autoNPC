@@ -17,4 +17,11 @@ traits:
 #  reflex: 0
 #  will: 0
 #speed: 20
+#ability:
+#  str: 4
+#  dex: 4
+#  con: 3
+#  int: 4
+#  wis: 4
+#  cha: 3
 ---
