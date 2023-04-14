@@ -118,7 +118,7 @@ function buildPercep(){
   
   if (this_front.challenge_level){
     if (this_front.challenge_level in percep_level_mod){
-      percep_value = percep_value + challenge_level_mod[this_front.percep_level];
+      percep_value = percep_value + percep_level_mod[this_front.challenge_level];
     }
   }
 
