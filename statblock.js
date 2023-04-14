@@ -2,6 +2,34 @@
 
 const this_front = dv.current().file.frontmatter
 
+// based on Table 2-2
+// Pathfinder 2e Game Mastery Guide
+// Release Date 2/26/2020
+const percep_dict = {
+  "-1": 5,
+  "0": 6,
+  "1": 7,
+  "2": 8,
+  "3": 9,
+  "4": 11,
+  "5": 12,
+  "6": 14,
+  "7": 15,
+  "8": 16,
+  "9": 18,
+  "10": 19,
+  "11": 21,
+  "12": 22,
+  "13": 23,
+  "14": 25,
+  "15": 26,
+  "16": 28,
+  "17": 29,
+  "19": 32,
+  "20": 33
+};
+
+
 // Returns the final statblock
 function wholestat(){
   return [
@@ -77,33 +105,6 @@ function buildTraits(){
 function buildPercep(){
   let percep_value = 6;
   let percep_list = [];
-
-  // based on Table 2-2
-  // Pathfinder 2e Game Mastery Guide
-  // Release Date 2/26/2020
-  const percep_dict = {
-    "-1": 5,
-    "0": 6,
-    "1": 7,
-    "2": 8,
-    "3": 9,
-    "4": 11,
-    "5": 12,
-    "6": 14,
-    "7": 15,
-    "8": 16,
-    "9": 18,
-    "10": 19,
-    "11": 21,
-    "12": 22,
-    "13": 23,
-    "14": 25,
-    "15": 26,
-    "16": 28,
-    "17": 29,
-    "19": 32,
-    "20": 33
-  };
 
   const percep_level_mod = {
     "low": -3,
