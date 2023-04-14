@@ -1,15 +1,19 @@
---
+---
 noteType: pf2eMonster
-aliases: "autpNPC"
-#tags: 
-#  - pf2e/creature/level/1
+aliases: "Ditto"
+tags: 
+  - pf2e/creature/level/1
 statblock: inline
-name: "auto NPC"
+name: "Sample Creature"
 level: 1
-challenge_level: "low"
-#perception: 5
-size: "Medium"
-alignment: "CN"
+#challenge_level: "high"
+#perception: 6
+#size: "small"
+#alignment: "CN"
 traits:
   - "[[humanoid|Humanoid]]"
+#saves:
+#  fortitude: 0
+#  reflex: 0
+#  will: 0
 ---
