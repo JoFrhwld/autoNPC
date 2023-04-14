@@ -162,6 +162,14 @@ function makeinfoblock(){
   } else {
  	infoarray.push('size: "Medium"')
   }
+
+  // speed of creature 
+  if (this_front.speed) {
+    infoarray.push(`speed: ${this_front.speed}`)
+  }else{ 
+    infoarray.push("speed: 25")
+  }
+  
   return infoarray.join("\n")
 }
 
