@@ -13,8 +13,8 @@ level: 1
 return: "statblock"
 traits:
   - "[[humanoid|Humanoid]]"
-saves:
-  fortitude: 0
+#saves:
+#  fortitude: 0
 #  reflex: 0
 #  will: 0
 #speed: 20
@@ -25,6 +25,18 @@ saves:
 #  int: 4
 #  wis: 4
 #  cha: 3
+abilities_top:
+  - name: Items
+    desc: "leather armor;"
+#abilities_mid:
+#abilities_bot:
+#skills: 
+#spellcasting
+attacks:
+  - name: Melee
+    desc:  "⬻ fist +6 ([[agile]], [[nonlethal]]); __Damage__ 1d4 (1d4) bludgeoning"
+  - name: Improvised Weapon
+    desc: "⬻ improvised +2; __Damage__ 1d6 (1d6)"
 ---
 
 ```dataviewjs
@@ -165,6 +177,53 @@ const saves_dict = {
   "24": 38 
 }
 
+// based on Table 2-7
+// Pathfinder 2e Game Mastery Guide
+// Release Date 2/26/2020
+const hp_dict = {
+  "-1": median([5,6]),
+  "0": median([11,13]),
+  "1": median([14,16]),
+  "2": median([25, 21]),
+  "3": median([37-31]),
+  "4": median([48,42]),
+  "5": median([59,53]),
+  "6": median([75,67]),
+  "7": median([90,82]),
+  "8": median([105,97]),
+  "9": median([120,112]),
+  "10": median([135,127]),
+  "11": median([150,142]),
+  "12": median([165,157]),
+  "13": median([180, 172]),
+  "14": median([195, 187]),
+  "15": median([210, 202]),
+  "16": median([225, 217]),
+  "17": median([240, 232]),
+  "18": median([255, 247]),
+  "19": median([270, 262]),
+  "20": median([285, 277]),
+  "21": median([305, 295]),
+  "22": median([329, 317]),
+  "23": median([351, 339]),
+  "24": median([385, 367]) 
+};
+
+function median(values){
+  if(values.length ===0) throw new Error("No inputs");
+
+  values.sort(function(a,b){
+    return a-b;
+  });
+
+  var half = Math.floor(values.length / 2);
+  
+  if (values.length % 2)
+    return values[half];
+  
+  return (values[half - 1] + values[half]) / 2.0;
+}
+
 // adjust default values given the challenge level
 function adjust_for_challenge(value, challenge_dict){
   let new_value = value
@@ -172,6 +231,23 @@ function adjust_for_challenge(value, challenge_dict){
     new_value = value + challenge_dict[this_front.challenge_level];
   }
   return new_value;
+}
+
+function block_to_yaml(block){
+  let block_list = [];
+  for (let idx in block){
+    let item = block[idx];
+    let these_keys = Object.keys(item);
+    for (let i = 0; i < these_keys.length; i++){
+       let item_line = "    ";
+       if (i===0){
+        item_line = "  - ";
+       }
+       let final_line = `${item_line}${these_keys[i]}: ${item[these_keys[i]]}`
+       block_list.push(final_line)
+    }
+  }
+  return block_list.join("\n");
 }
 
 // Returns the final statblock
@@ -381,9 +457,55 @@ function build_ability(){
   return ability_string;
 }
 
+function buildHP(){
+  let hp_value = hp_dict[this_front.level.toString()]
+  if ("hp" in this_front){
+    hp_value = this_front.hp;
+  }
+  return hp_value
+}
+
+function buildHPEntry(hp_value){
+  let hp_list = []
+  hp_list.push(`hp: ${hp_value}`);
+  hp_list.push("health:")
+  hp_list.push("  - name: HP")
+  hp_list.push(`    desc: "${hp_value};"`)
+  return hp_list.join("\n")
+}
+
+const build_blocks = [
+    "abilities_top",
+    "abilities_mid",
+    "abilities_bot",
+    "attacks",
+    "skills",
+    "spellcasting"
+]
+
+function buildABlock(block_name){
+  let block_list = [];
+  if (block_name in this_front){
+    block_list.push(`${block_name}:`);
+    block_list.push(
+        block_to_yaml(this_front[block_name])
+    );
+  }
+  return block_list.join("\n")
+}
+
+function buildAllBlocks(blocks){
+  let all_blocks = [];
+  for (let idx in blocks){
+    all_blocks.push(buildABlock(blocks[idx]));
+  }
+  return all_blocks.join("\n");
+}
+
 // global values
 var percep_value = buildPercep();
 var ac_info_dict = buildAC();
+var hp_value = buildHP();
 
 
 // Builds components of a stat block
@@ -391,18 +513,30 @@ function statcontents(){
   return [
    makeinfoblock(),
    build_ability(),
+   buildHPEntry(hp_value),
    buildTraits(),
    buildPercepBlock(percep_value),
-   buildACBlock(ac_info_dict)
+   buildACBlock(ac_info_dict),
+   buildAllBlocks(build_blocks)
   ].join("\n")
 }
 
-dv.paragraph(wholestat())
-```
+/////
 
-```encounter-table
-name: autoNPC
-creatures:
-  - autoNPC 15, 20, 4
+// Build encounter table
+
+function encountertable(){
+  let tbl_list = [
+    "```encounter-table",
+    `name: ${this_front.name}`,
+    "creatures:",
+    `  - ${this_front.name}, ${hp_value}, ${ac_info_dict.ac}, ${percep_value}`,
+    "```"
+  ];
+  return tbl_list.join("\n")
+}
+
+dv.paragraph(wholestat())
+dv.paragraph(encountertable())
 ```
 
