@@ -10,6 +10,7 @@ level: 1
 #perception: 6
 #size: "small"
 #alignment: "CN"
+return: "statblock"
 traits:
   - "[[humanoid|Humanoid]]"
 saves:
@@ -175,8 +176,16 @@ function adjust_for_challenge(value, challenge_dict){
 
 // Returns the final statblock
 function wholestat(){
+  let blockhead = "```";
+
+  if ("return" in this_front){
+    if (this_front.return === "statblock"){
+      blockhead = "```statblock";
+    }
+  }
+  
   return [
-    "```statblock",
+    blockhead,
     statcontents(),
     "```"
   ].join("\n")
@@ -396,3 +405,4 @@ name: autoNPC
 creatures:
   - autoNPC 15, 20, 4
 ```
+
