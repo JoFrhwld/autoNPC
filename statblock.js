@@ -226,8 +226,7 @@ function buildTraits(){
 // Builds perception
 function buildPercep(){
   let percep_value = percep_dict[this_front.level.toString()];
-  let percep_list = [];
-  
+
   const percep_level_mod = {
     "low": -3,
     "high": 3
@@ -240,7 +239,11 @@ function buildPercep(){
   if ("perception" in  this_front){
     percep_value = this_front.perception;
   }
-  
+  return percep_value
+}
+
+function buildPercepBlock(percep_value){
+  let percep_list = []
   percep_list.push(
     `modifier: "${percep_value}"`
   );
@@ -262,11 +265,12 @@ function buildPercep(){
 }
 
 function buildAC(){
-  let ac_value = ac_dict[this_front.level.toString()];
-  let fortitude_value = saves_dict[this_front.level.toString()];
-  let reflex_value = saves_dict[this_front.level.toString()];
-  let will_value = saves_dict[this_front.level.toString()];
-  let ac_list = [];
+  let ac_info_dict = {
+    "ac": ac_dict[this_front.level.toString()],
+    "fortitude": saves_dict[this_front.level.toString()],
+    "reflex": saves_dict[this_front.level.toString()],
+    "will": saves_dict[this_front.level.toString()]
+  }
   
   const ac_level_mod = {
     "low": -2,
@@ -280,39 +284,37 @@ function buildAC(){
 
   /// AC setting
   if (this_front.challenge_level){
-    ac_value = adjust_for_challenge(ac_value, ac_level_mod);
+    ac_info_dict.ac = adjust_for_challenge(ac_info_dict.ac, ac_level_mod);
   }
   // Override ac if in header
   if ("ac" in  this_front){
-    ac_value = this_front.ac;
+    ac_info_dict.ac = this_front.ac;
   }
 
   // saves setting 
   if (this_front.challenge_level){
-    fortitude_value = adjust_for_challenge(fortitude_value, save_level_mod);
-    will_value = adjust_for_challenge(will_value, save_level_mod);
-    reflex_value = adjust_for_challenge(reflex_value, save_level_mod);
+    ac_info_dict.fortitude = adjust_for_challenge(ac_info_dict.fortitude, save_level_mod);
+    ac_info_dict.will= adjust_for_challenge(ac_info_dict.will, save_level_mod);
+    ac_info_dict.reflex = adjust_for_challenge(ac_info_dict.reflex, save_level_mod);
   }
   // saves overides
   if ("saves" in this_front){
-    if ("fortitude" in this_front.saves){
-      fortitude_value = this_front.saves.fortitude;
-    }
-    if("reflex" in this_front.saves){
-      reflex_value = this_front.saves.reflex;
-    }
-    if("will" in this_front.saves){
-      will_value = this_front.saves.will; 
+    for (const [save, value] of Object.entries(this_front.saves)){
+      ac_info_dict[save] = value;
     }
   } 
+  return ac_info_dict;
+}
 
-  ac_list.push(`ac: ${ac_value}`);
+function buildACBlock(ac_info_dict){
+  let ac_list = [];
+  ac_list.push(`ac: ${ac_info_dict.ac}`);
   ac_list.push("armorclass:");
   ac_list.push("  - name: AC")
-  ac_list.push(`    desc: "${ac_value}; ` + 
-               `__Fort__: +${fortitude_value} (1d20+${fortitude_value}); `+
-               `__Ref__: +${reflex_value} (1d20+${reflex_value}); `+
-               `__Will__: +${will_value} (1d20+${will_value});"`)
+  ac_list.push(`    desc: "${ac_info_dict.ac}; ` + 
+               `__Fort__: +${ac_info_dict.fortitude} (1d20+${ac_info_dict.fortitude}); `+
+               `__Ref__: +${ac_info_dict.reflex} (1d20+${ac_info_dict.reflex}); `+
+               `__Will__: +${ac_info_dict.will} (1d20+${ac_info_dict.will});"`)
   return ac_list.join("\n")
 }
 
@@ -341,14 +343,19 @@ function build_ability(){
   return ability_string;
 }
 
+// global values
+var percep_value = buildPercep();
+var ac_info_dict = buildAC();
+
+
 // Builds components of a stat block
 function statcontents(){
   return [
    makeinfoblock(),
    build_ability(),
    buildTraits(),
-   buildPercep(),
-   buildAC()
+   buildPercepBlock(percep_value),
+   buildACBlock(ac_info_dict)
   ].join("\n")
 }
 
